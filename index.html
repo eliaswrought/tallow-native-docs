@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tallow Native — Documentation</title>
+
+  <!-- marked.js for Markdown rendering -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <!-- highlight.js for code blocks -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/core.min.js"></script>
+
+  <style>
+    /* ═══════════════════════════════════════════
+       RESET & BASE
+    ═══════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:        #1C2B4A;
+      --navy-dark:   #131f35;
+      --navy-mid:    #243456;
+      --navy-light:  #2f4270;
+      --cream:       #F5EDD8;
+      --cream-dark:  #EDE8DF;
+      --copper:      #C4882A;
+      --copper-light:#D9A84E;
+      --cast-gray:   #7A6A4F;
+      --text-main:   #1a1a1a;
+      --text-muted:  #6b6b6b;
+      --sidebar-w:   300px;
+      --content-max: 860px;
+    }
+
+    html { height: 100%; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+      background: var(--cream);
+      color: var(--text-main);
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    /* ═══════════════════════════════════════════
+       SIDEBAR
+    ═══════════════════════════════════════════ */
+    #sidebar {
+      width: var(--sidebar-w);
+      min-width: var(--sidebar-w);
+      background: var(--navy-dark);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+      border-right: 1px solid rgba(255,255,255,0.06);
+      flex-shrink: 0;
+    }
+
+    #sidebar-header {
+      padding: 20px 18px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      flex-shrink: 0;
+    }
+
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .sidebar-logo svg {
+      width: 32px;
+      height: 32px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-brand {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar-brand-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--cream);
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      line-height: 1.2;
+    }
+
+    .sidebar-brand-sub {
+      font-size: 10px;
+      color: var(--copper);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    #search-wrap {
+      position: relative;
+    }
+
+    #search {
+      width: 100%;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 6px;
+      color: var(--cream);
+      font-size: 12.5px;
+      padding: 7px 10px 7px 32px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    #search::placeholder { color: rgba(245,237,216,0.35); }
+    #search:focus { border-color: rgba(196,136,42,0.6); }
+
+    #search-icon {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    #sidebar-nav {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 0 20px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.1) transparent;
+    }
+
+    #sidebar-nav::-webkit-scrollbar { width: 4px; }
+    #sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+    /* Nav items */
+    .nav-folder-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 18px 6px 14px;
+      cursor: pointer;
+      color: rgba(245,237,216,0.75);
+      font-size: 11.5px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      user-select: none;
+      transition: color 0.15s;
+    }
+
+    .nav-folder-label:hover { color: var(--cream); }
+
+    .nav-folder-label .arrow {
+      width: 12px;
+      height: 12px;
+      opacity: 0.5;
+      transition: transform 0.2s;
+      flex-shrink: 0;
+    }
+
+    .nav-folder.open > .nav-folder-label .arrow { transform: rotate(90deg); }
+
+    .nav-folder-icon {
+      width: 14px;
+      height: 14px;
+      opacity: 0.6;
+      flex-shrink: 0;
+    }
+
+    .nav-folder-children {
+      display: none;
+      padding-left: 14px;
+    }
+
+    .nav-folder.open > .nav-folder-children { display: block; }
+
+    .nav-file {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 18px 5px 16px;
+      cursor: pointer;
+      color: rgba(245,237,216,0.6);
+      font-size: 12.5px;
+      border-radius: 0;
+      transition: background 0.12s, color 0.12s;
+      text-decoration: none;
+    }
+
+    .nav-file:hover {
+      background: rgba(255,255,255,0.06);
+      color: var(--cream);
+    }
+
+    .nav-file.active {
+      background: rgba(196,136,42,0.18);
+      color: var(--cream);
+      border-left: 2px solid var(--copper);
+      padding-left: 14px;
+    }
+
+    .nav-file-icon {
+      width: 13px;
+      height: 13px;
+      flex-shrink: 0;
+      opacity: 0.5;
+    }
+
+    .nav-file.active .nav-file-icon { opacity: 0.8; }
+
+    .badge {
+      font-size: 9px;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+
+    .badge-md  { background: rgba(28,43,74,0.5); color: rgba(245,237,216,0.5); }
+    .badge-csv { background: rgba(44,74,46,0.4); color: rgba(160,220,160,0.7); }
+    .badge-svg { background: rgba(196,136,42,0.25); color: rgba(217,168,78,0.9); }
+    .badge-html{ background: rgba(120,60,180,0.25); color: rgba(200,150,255,0.8); }
+    .badge-css { background: rgba(40,100,180,0.25); color: rgba(100,180,255,0.8); }
+    .badge-js  { background: rgba(180,150,20,0.25); color: rgba(255,220,80,0.8); }
+
+    /* ═══════════════════════════════════════════
+       MAIN CONTENT
+    ═══════════════════════════════════════════ */
+    #main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    #topbar {
+      background: #fff;
+      border-bottom: 1px solid #e8e2d6;
+      padding: 12px 28px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+      min-height: 52px;
+    }
+
+    #breadcrumb {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    #breadcrumb span { color: var(--text-main); font-weight: 500; }
+    #breadcrumb .sep { opacity: 0.35; font-size: 11px; }
+
+    #file-type-badge {
+      margin-left: auto;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: var(--cream);
+      color: var(--cast-gray);
+      border: 1px solid var(--cream-dark);
+    }
+
+    #content-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 40px 48px 80px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(0,0,0,0.1) transparent;
+    }
+
+    #content-area::-webkit-scrollbar { width: 6px; }
+    #content-area::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 3px; }
+
+    #content-inner {
+      max-width: var(--content-max);
+      margin: 0 auto;
+    }
+
+    /* Welcome screen */
+    #welcome {
+      max-width: var(--content-max);
+      margin: 0 auto;
+      padding-top: 20px;
+    }
+
+    .welcome-logo-wrap {
+      margin-bottom: 36px;
+    }
+
+    .welcome-logo-wrap svg {
+      max-width: 380px;
+      height: auto;
+    }
+
+    #welcome h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 12px;
+      letter-spacing: -0.3px;
+    }
+
+    #welcome p {
+      color: var(--cast-gray);
+      font-size: 16px;
+      line-height: 1.7;
+      max-width: 600px;
+    }
+
+    .welcome-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+      margin-top: 36px;
+    }
+
+    .stat-card {
+      background: #fff;
+      border: 1px solid #e8e2d6;
+      border-radius: 10px;
+      padding: 20px;
+    }
+
+    .stat-card .stat-value {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--navy);
+      letter-spacing: -0.5px;
+    }
+
+    .stat-card .stat-label {
+      font-size: 12px;
+      color: var(--cast-gray);
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .welcome-divider {
+      border: none;
+      border-top: 1px solid #e8e2d6;
+      margin: 36px 0;
+    }
+
+    .welcome-sections h2 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--navy);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 16px;
+    }
+
+    .section-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 12px;
+    }
+
+    .section-card {
+      background: #fff;
+      border: 1px solid #e8e2d6;
+      border-radius: 8px;
+      padding: 16px;
+      cursor: pointer;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .section-card:hover {
+      border-color: var(--copper);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .section-card-label {
+      font-weight: 600;
+      color: var(--navy);
+      font-size: 13.5px;
+      margin-bottom: 6px;
+    }
+
+    .section-card-desc {
+      font-size: 12px;
+      color: var(--cast-gray);
+      line-height: 1.5;
+    }
+
+    /* ═══════════════════════════════════════════
+       MARKDOWN CONTENT STYLES
+    ═══════════════════════════════════════════ */
+    .md-content {
+      color: var(--text-main);
+    }
+
+    .md-content h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--navy);
+      margin: 0 0 8px;
+      line-height: 1.25;
+      letter-spacing: -0.3px;
+      padding-bottom: 14px;
+      border-bottom: 2px solid var(--cream-dark);
+    }
+
+    .md-content h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--navy);
+      margin: 36px 0 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--cream-dark);
+      letter-spacing: -0.2px;
+    }
+
+    .md-content h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--navy);
+      margin: 24px 0 10px;
+    }
+
+    .md-content h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--cast-gray);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin: 20px 0 8px;
+    }
+
+    .md-content p {
+      margin: 0 0 14px;
+      line-height: 1.75;
+    }
+
+    .md-content ul, .md-content ol {
+      margin: 0 0 14px 20px;
+      line-height: 1.75;
+    }
+
+    .md-content li { margin-bottom: 4px; }
+    .md-content li > ul, .md-content li > ol { margin-top: 4px; margin-bottom: 4px; }
+
+    .md-content strong { color: var(--navy); }
+
+    .md-content em { color: var(--cast-gray); }
+
+    .md-content a {
+      color: var(--copper);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(196,136,42,0.3);
+    }
+    .md-content a:hover { border-bottom-color: var(--copper); }
+
+    .md-content blockquote {
+      border-left: 3px solid var(--copper);
+      margin: 20px 0;
+      padding: 12px 18px;
+      background: rgba(196,136,42,0.06);
+      border-radius: 0 6px 6px 0;
+      color: var(--cast-gray);
+      font-style: italic;
+    }
+
+    .md-content code {
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      background: rgba(28,43,74,0.06);
+      border: 1px solid rgba(28,43,74,0.1);
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-size: 0.88em;
+      color: var(--navy);
+    }
+
+    .md-content pre {
+      background: #1e2a3a;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 16px 0;
+      overflow-x: auto;
+    }
+
+    .md-content pre code {
+      background: none;
+      border: none;
+      padding: 0;
+      color: #e8e8e8;
+      font-size: 0.875em;
+      line-height: 1.65;
+    }
+
+    /* Tables */
+    .md-content table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 13.5px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 0 0 1px #e0dace;
+    }
+
+    .md-content th {
+      background: var(--navy);
+      color: var(--cream);
+      font-weight: 600;
+      text-align: left;
+      padding: 10px 14px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .md-content td {
+      padding: 9px 14px;
+      border-bottom: 1px solid #e8e2d6;
+      vertical-align: top;
+    }
+
+    .md-content tr:last-child td { border-bottom: none; }
+    .md-content tr:nth-child(even) td { background: rgba(0,0,0,0.015); }
+    .md-content tr:hover td { background: rgba(196,136,42,0.04); }
+
+    .md-content hr {
+      border: none;
+      border-top: 1px solid #e8e2d6;
+      margin: 28px 0;
+    }
+
+    .md-content img { max-width: 100%; border-radius: 6px; }
+
+    /* ═══════════════════════════════════════════
+       CSV CONTENT STYLES
+    ═══════════════════════════════════════════ */
+    .csv-content {
+      overflow-x: auto;
+    }
+
+    .csv-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.5px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 0 0 1px #e0dace;
+      white-space: nowrap;
+    }
+
+    .csv-table th {
+      background: var(--navy);
+      color: var(--cream);
+      font-weight: 600;
+      text-align: left;
+      padding: 10px 14px;
+      font-size: 11.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      position: sticky;
+      top: 0;
+    }
+
+    .csv-table td {
+      padding: 8px 14px;
+      border-bottom: 1px solid #e8e2d6;
+      vertical-align: top;
+      max-width: 280px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .csv-table tr:last-child td { border-bottom: none; }
+    .csv-table tr:nth-child(even) td { background: rgba(0,0,0,0.015); }
+    .csv-table tr:hover td { background: rgba(196,136,42,0.05); }
+
+    .csv-row-count {
+      font-size: 12px;
+      color: var(--cast-gray);
+      margin-top: 10px;
+      text-align: right;
+    }
+
+    /* ═══════════════════════════════════════════
+       SVG CONTENT STYLES
+    ═══════════════════════════════════════════ */
+    .svg-container {
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+
+    .svg-block {
+      background: #fff;
+      border: 1px solid #e8e2d6;
+      border-radius: 12px;
+      padding: 40px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .svg-block-dark {
+      background: var(--navy);
+    }
+
+    .svg-block svg { max-width: 100%; height: auto; }
+
+    .svg-label {
+      font-size: 12px;
+      color: var(--cast-gray);
+      text-align: center;
+      margin-top: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .svg-variant { text-align: center; }
+
+    /* ═══════════════════════════════════════════
+       HTML CONTENT (iframe)
+    ═══════════════════════════════════════════ */
+    .html-frame-wrap {
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      border: 1px solid #e8e2d6;
+    }
+
+    .html-frame-bar {
+      background: #f0ece4;
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-bottom: 1px solid #e8e2d6;
+    }
+
+    .frame-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .html-frame-url {
+      font-size: 11.5px;
+      color: var(--cast-gray);
+      margin-left: 8px;
+      font-family: 'SF Mono', monospace;
+    }
+
+    .html-frame-wrap iframe {
+      width: 100%;
+      height: 680px;
+      border: none;
+      display: block;
+    }
+
+    /* ═══════════════════════════════════════════
+       CSS / JS CODE VIEW
+    ═══════════════════════════════════════════ */
+    .code-content {
+      background: #1e2a3a;
+      border-radius: 10px;
+      padding: 24px;
+      overflow-x: auto;
+    }
+
+    .code-content pre {
+      margin: 0;
+      color: #e8e8e8;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    /* ═══════════════════════════════════════════
+       LOADING / ERROR STATES
+    ═══════════════════════════════════════════ */
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 200px;
+      color: var(--cast-gray);
+      font-size: 14px;
+    }
+
+    /* ═══════════════════════════════════════════
+       SEARCH HIGHLIGHT
+    ═══════════════════════════════════════════ */
+    .nav-hidden { display: none !important; }
+
+    /* ═══════════════════════════════════════════
+       SCROLLBAR TWEAKS
+    ═══════════════════════════════════════════ */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 3px; }
+
+    /* ═══════════════════════════════════════════
+       RESPONSIVE
+    ═══════════════════════════════════════════ */
+    @media (max-width: 720px) {
+      :root { --sidebar-w: 240px; }
+      #content-area { padding: 24px 20px 60px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══ SIDEBAR ═══════════════════════════════ -->
+<nav id="sidebar">
+  <div id="sidebar-header">
+    <div class="sidebar-logo">
+      <!-- Inline badge SVG (small) -->
+      <svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg">
+        <rect width="220" height="220" fill="#1C2B4A"/>
+        <circle cx="110" cy="110" r="100" fill="none" stroke="#F5EDD8" stroke-width="2.5"/>
+        <circle cx="110" cy="110" r="90" fill="none" stroke="#F5EDD8" stroke-width="1.2"/>
+        <circle cx="10" cy="110" r="3" fill="#F5EDD8"/>
+        <circle cx="210" cy="110" r="3" fill="#F5EDD8"/>
+        <defs>
+          <path id="ta" d="M 24,110 A 86,86 0 0,1 196,110"/>
+          <path id="tb" d="M 34,118 A 80,80 0 0,0 186,118"/>
+        </defs>
+        <text font-family="Georgia,serif" font-size="14.5" fill="#F5EDD8" letter-spacing="5" font-weight="bold">
+          <textPath href="#ta" startOffset="6%">TALLOW NATIVE</textPath>
+        </text>
+        <text font-family="Helvetica,Arial,sans-serif" font-size="9.5" fill="#F5EDD8" letter-spacing="2.5" opacity="0.85">
+          <textPath href="#tb" startOffset="8%">BUILT FOR THE FRYER</textPath>
+        </text>
+        <rect x="76" y="74" width="68" height="28" rx="5" fill="none" stroke="#F5EDD8" stroke-width="2.2"/>
+        <path d="M 76,74 Q 110,60 144,74" fill="none" stroke="#F5EDD8" stroke-width="2.2"/>
+        <circle cx="110" cy="60" r="4" fill="#F5EDD8"/>
+        <path d="M 70,80 Q 62,82 62,88 Q 62,95 70,96" fill="none" stroke="#F5EDD8" stroke-width="1.8"/>
+        <path d="M 150,80 Q 158,82 158,88 Q 158,95 150,96" fill="none" stroke="#F5EDD8" stroke-width="1.8"/>
+        <line x1="110" y1="102" x2="110" y2="112" stroke="#C4882A" stroke-width="2.5"/>
+        <polygon points="110,116 106,108 114,108" fill="#C4882A"/>
+        <path d="M 82,120 L 70,143 L 150,143 L 138,120 Z" fill="none" stroke="#F5EDD8" stroke-width="2"/>
+        <line x1="82" y1="120" x2="138" y2="120" stroke="#F5EDD8" stroke-width="1.5"/>
+        <text x="110" y="160" font-family="Helvetica,Arial,sans-serif" font-size="9" fill="#F5EDD8" letter-spacing="2" text-anchor="middle" opacity="0.7">EST. 2026</text>
+      </svg>
+      <div class="sidebar-brand">
+        <span class="sidebar-brand-name">Tallow Native</span>
+        <span class="sidebar-brand-sub">Docs</span>
+      </div>
+    </div>
+
+    <div id="search-wrap">
+      <svg id="search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#F5EDD8" stroke-width="2.5">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      <input type="text" id="search" placeholder="Search files…" autocomplete="off" />
+    </div>
+  </div>
+
+  <div id="sidebar-nav">
+    <!-- Populated by JS -->
+  </div>
+</nav>
+
+<!-- ═══ MAIN ═══════════════════════════════ -->
+<div id="main">
+  <div id="topbar">
+    <div id="breadcrumb">
+      <span>Tallow Native</span>
+    </div>
+    <div id="file-type-badge" style="display:none"></div>
+  </div>
+
+  <div id="content-area">
+    <div id="content-inner">
+      <div id="welcome"><!-- populated by JS --></div>
+      <div id="file-view" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Load the content data -->
+<script src="content.js"></script>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   TALLOW NATIVE DOCS — MAIN APP
+═══════════════════════════════════════════════════════════ */
+
+// Configure marked.js
+marked.setOptions({
+  gfm: true,
+  breaks: false,
+  headerIds: true,
+  mangle: false,
+});
+
+let currentFileId = null;
+const allFiles = [];
+
+// ─── BUILD FLAT FILE INDEX ──────────────────────────────
+function indexTree(nodes, path = []) {
+  for (const node of nodes) {
+    if (node.type === 'folder') {
+      indexTree(node.children, [...path, node.label]);
+    } else {
+      allFiles.push({ ...node, breadPath: [...path] });
+    }
+  }
+}
+
+indexTree(SITE_CONTENT.tree);
+
+// ─── SIDEBAR NAV BUILD ──────────────────────────────────
+function iconForType(type) {
+  const icons = {
+    md:   `<svg class="nav-file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>`,
+    csv:  `<svg class="nav-file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg>`,
+    svg:  `<svg class="nav-file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg>`,
+    html: `<svg class="nav-file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="16,18 22,12 16,6"/><polyline points="8,6 2,12 8,18"/></svg>`,
+    css:  `<svg class="nav-file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 3l1.5 16.5L12 21l6.5-1.5L20 3z"/></svg>`,
+    js:   `<svg class="nav-file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="13,2 3,14 12,14 11,22 21,10 12,10"/></svg>`,
+  };
+  return icons[type] || icons.md;
+}
+
+function badgeForType(type) {
+  if (!type || type === 'folder') return '';
+  return `<span class="badge badge-${type}">${type.toUpperCase()}</span>`;
+}
+
+function buildNavNode(node, depth = 0) {
+  const indent = depth * 10;
+
+  if (node.type === 'folder') {
+    const childrenHTML = node.children.map(c => buildNavNode(c, depth + 1)).join('');
+    // Auto-open top-level sections
+    const open = depth === 0 ? 'open' : '';
+
+    return `
+      <div class="nav-folder ${open}" data-folder="${node.id}">
+        <div class="nav-folder-label" style="padding-left:${14 + indent}px" onclick="toggleFolder(this)">
+          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="9,18 15,12 9,6"/>
+          </svg>
+          <svg class="nav-folder-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
+          </svg>
+          ${escHtml(node.label)}
+        </div>
+        <div class="nav-folder-children">
+          ${childrenHTML}
+        </div>
+      </div>`;
+  } else {
+    return `
+      <div class="nav-file" 
+           data-id="${node.id}" 
+           data-type="${node.type}"
+           style="padding-left:${16 + indent}px"
+           onclick="openFile('${node.id}')">
+        ${iconForType(node.type)}
+        <span>${escHtml(node.label)}</span>
+        ${badgeForType(node.type)}
+      </div>`;
+  }
+}
+
+function renderSidebar() {
+  const nav = document.getElementById('sidebar-nav');
+  nav.innerHTML = SITE_CONTENT.tree.map(n => buildNavNode(n)).join('');
+}
+
+function toggleFolder(labelEl) {
+  const folder = labelEl.closest('.nav-folder');
+  folder.classList.toggle('open');
+}
+
+// ─── FILE OPENING ───────────────────────────────────────
+function openFile(fileId) {
+  const file = allFiles.find(f => f.id === fileId);
+  if (!file) return;
+
+  currentFileId = fileId;
+
+  // Update active state in sidebar
+  document.querySelectorAll('.nav-file').forEach(el => {
+    el.classList.toggle('active', el.dataset.id === fileId);
+  });
+
+  // Open parent folders
+  const activeEl = document.querySelector(`.nav-file[data-id="${fileId}"]`);
+  if (activeEl) {
+    let el = activeEl.parentElement;
+    while (el) {
+      if (el.classList.contains('nav-folder')) el.classList.add('open');
+      el = el.parentElement;
+    }
+    // Scroll into view
+    setTimeout(() => activeEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' }), 50);
+  }
+
+  // Update breadcrumb
+  const parts = [...file.breadPath, file.label];
+  document.getElementById('breadcrumb').innerHTML =
+    parts.map((p, i) => i === parts.length - 1
+      ? `<span>${escHtml(p)}</span>`
+      : `${escHtml(p)} <span class="sep">›</span>`
+    ).join('');
+
+  // Update type badge
+  const badge = document.getElementById('file-type-badge');
+  const typeLabels = { md: 'Markdown', csv: 'Spreadsheet', svg: 'Vector', html: 'HTML', css: 'CSS', js: 'JavaScript' };
+  badge.textContent = typeLabels[file.type] || file.type.toUpperCase();
+  badge.style.display = '';
+
+  // Hide welcome, show file view
+  document.getElementById('welcome').style.display = 'none';
+  const view = document.getElementById('file-view');
+  view.style.display = '';
+  view.innerHTML = renderFile(file);
+
+  // Scroll to top
+  document.getElementById('content-area').scrollTop = 0;
+}
+
+// ─── FILE RENDERERS ─────────────────────────────────────
+
+function renderFile(file) {
+  switch (file.type) {
+    case 'md':   return renderMarkdown(file);
+    case 'csv':  return renderCSV(file);
+    case 'svg':  return renderSVG(file);
+    case 'html': return renderHTML(file);
+    case 'css':  return renderCode(file, 'css');
+    case 'js':   return renderCode(file, 'javascript');
+    default:     return renderCode(file, 'text');
+  }
+}
+
+function renderMarkdown(file) {
+  const html = marked.parse(file.content || '');
+  return `<div class="md-content">${html}</div>`;
+}
+
+function renderCSV(file) {
+  const rows = parseCSV(file.content || '');
+  if (!rows.length) return '<p>Empty file.</p>';
+
+  const header = rows[0];
+  const data = rows.slice(1).filter(r => r.some(c => c.trim()));
+
+  const thead = header.map(h => `<th>${escHtml(h)}</th>`).join('');
+  const tbody = data.map(row => {
+    const cells = row.map((c, i) => `<td title="${escHtml(c)}">${escHtml(c)}</td>`).join('');
+    return `<tr>${cells}</tr>`;
+  }).join('');
+
+  return `
+    <div class="csv-content">
+      <table class="csv-table">
+        <thead><tr>${thead}</tr></thead>
+        <tbody>${tbody}</tbody>
+      </table>
+      <div class="csv-row-count">${data.length} row${data.length !== 1 ? 's' : ''}</div>
+    </div>`;
+}
+
+function renderSVG(file) {
+  // Show on both light and dark backgrounds
+  const svgCode = (file.content || '').replace(/^<\?xml[^?>]*\?>\s*/i, '');
+  return `
+    <div class="svg-container">
+      <div class="svg-variant">
+        <div class="svg-block" style="background:#F5EDD8">
+          ${svgCode}
+        </div>
+        <div class="svg-label">Light background</div>
+      </div>
+      <div class="svg-variant">
+        <div class="svg-block svg-block-dark">
+          ${svgCode}
+        </div>
+        <div class="svg-label">Dark background</div>
+      </div>
+    </div>`;
+}
+
+function renderHTML(file) {
+  // Create a blob URL for the iframe
+  const blob = new Blob([file.content || ''], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  return `
+    <div class="html-frame-wrap">
+      <div class="html-frame-bar">
+        <div class="frame-dot" style="background:#FF5F57"></div>
+        <div class="frame-dot" style="background:#FEBC2E"></div>
+        <div class="frame-dot" style="background:#28C840"></div>
+        <span class="html-frame-url">${escHtml(file.path)}</span>
+      </div>
+      <iframe src="${url}" sandbox="allow-scripts allow-same-origin"></iframe>
+    </div>`;
+}
+
+function renderCode(file, lang) {
+  return `
+    <div class="code-content">
+      <pre><code>${escHtml(file.content || '')}</code></pre>
+    </div>`;
+}
+
+// ─── CSV PARSER ─────────────────────────────────────────
+function parseCSV(text) {
+  const rows = [];
+  const lines = text.split('\n');
+  for (const line of lines) {
+    if (!line.trim()) continue;
+    const row = [];
+    let inQuote = false;
+    let cell = '';
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') {
+        if (inQuote && line[i+1] === '"') { cell += '"'; i++; }
+        else inQuote = !inQuote;
+      } else if (ch === ',' && !inQuote) {
+        row.push(cell.trim()); cell = '';
+      } else {
+        cell += ch;
+      }
+    }
+    row.push(cell.trim());
+    rows.push(row);
+  }
+  return rows;
+}
+
+// ─── SEARCH ─────────────────────────────────────────────
+document.getElementById('search').addEventListener('input', function() {
+  const q = this.value.toLowerCase().trim();
+
+  if (!q) {
+    // Restore all
+    document.querySelectorAll('.nav-file, .nav-folder').forEach(el => {
+      el.classList.remove('nav-hidden');
+    });
+    return;
+  }
+
+  document.querySelectorAll('.nav-file').forEach(el => {
+    const text = el.textContent.toLowerCase();
+    el.classList.toggle('nav-hidden', !text.includes(q));
+  });
+
+  // Show/hide folders based on visible children
+  document.querySelectorAll('.nav-folder').forEach(folder => {
+    const visibleChildren = folder.querySelectorAll('.nav-file:not(.nav-hidden)');
+    folder.classList.toggle('nav-hidden', visibleChildren.length === 0);
+    if (visibleChildren.length > 0) folder.classList.add('open');
+  });
+});
+
+// ─── UTILITIES ──────────────────────────────────────────
+function escHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// ─── WELCOME SCREEN ─────────────────────────────────────
+function renderWelcome() {
+  const sections = SITE_CONTENT.tree.filter(n => n.type === 'folder');
+  const sectionDescs = {
+    '01-product': 'Engineering specs, BOM, manufacturing, testing',
+    '02-sourcing': 'Alibaba messages, supplier scorecard, landed costs',
+    '03-brand': 'Logo, colors, typography, brand voice',
+    '04-website': 'Complete website HTML, copy, FAQ, SEO plan',
+    '05-marketing': 'Email sequences, social posts, press release, outreach',
+    '06-packaging': 'Box design, dieline, manual, quick-start guide',
+    '07-business': 'Business plan, financials, legal, fulfillment',
+    '08-content': 'Blog posts, recipe booklet',
+  };
+
+  const cards = sections.map(s => `
+    <div class="section-card" onclick="openFirstFileIn('${s.id}')">
+      <div class="section-card-label">${escHtml(s.label)}</div>
+      <div class="section-card-desc">${escHtml(sectionDescs[s.name] || '')}</div>
+    </div>`).join('');
+
+  // Primary logo SVG (embedded)
+  const logoSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 240">
+    <rect width="400" height="240" fill="#F5EDD8"/>
+    <circle cx="100" cy="120" r="82" fill="none" stroke="#1C2B4A" stroke-width="5.5" stroke-dasharray="485 28" stroke-dashoffset="-14"/>
+    <circle cx="100" cy="120" r="55" fill="none" stroke="#1C2B4A" stroke-width="3.5"/>
+    <circle cx="100" cy="120" r="28" fill="none" stroke="#1C2B4A" stroke-width="2.5"/>
+    <polygon points="100,103 115.6,112 115.6,129 100,138 84.4,129 84.4,112" fill="none" stroke="#1C2B4A" stroke-width="2.2" stroke-linejoin="round"/>
+    <circle cx="100" cy="120" r="5" fill="#1C2B4A"/>
+    <circle cx="100" cy="120" r="3" fill="#C4882A"/>
+    <line x1="198" y1="60" x2="198" y2="180" stroke="#1C2B4A" stroke-width="1.5" opacity="0.2"/>
+    <text x="216" y="103" font-family="Helvetica Neue,Arial,sans-serif" font-size="34" font-weight="700" fill="#1C2B4A" letter-spacing="7">TALLOW</text>
+    <text x="216" y="143" font-family="Helvetica Neue,Arial,sans-serif" font-size="34" font-weight="300" fill="#1C2B4A" letter-spacing="7">NATIVE</text>
+    <line x1="216" y1="152" x2="388" y2="152" stroke="#C4882A" stroke-width="1.5"/>
+    <text x="216" y="170" font-family="Helvetica Neue,Arial,sans-serif" font-size="10.5" font-weight="400" fill="#7A6A4F" letter-spacing="4">BUILT FOR THE FRYER</text>
+  </svg>`;
+
+  document.getElementById('welcome').innerHTML = `
+    <div class="welcome-logo-wrap">${logoSVG}</div>
+    <h1>Launch Documentation</h1>
+    <p>The complete Tallow Native Dutch Oven System launch package — 43 tasks, 62 files, ~600KB of content. Select any file from the sidebar to view it.</p>
+
+    <div class="welcome-stats">
+      <div class="stat-card"><div class="stat-value">$349</div><div class="stat-label">Retail Price</div></div>
+      <div class="stat-card"><div class="stat-value">500</div><div class="stat-label">First Run Units</div></div>
+      <div class="stat-card"><div class="stat-value">~59%</div><div class="stat-label">Gross Margin</div></div>
+      <div class="stat-card"><div class="stat-value">$117</div><div class="stat-label">Landed COGS / unit</div></div>
+      <div class="stat-card"><div class="stat-value">173</div><div class="stat-label">Break-even Units</div></div>
+      <div class="stat-card"><div class="stat-value">M18×1.5</div><div class="stat-label">Drain Thread Spec</div></div>
+    </div>
+
+    <hr class="welcome-divider" />
+
+    <div class="welcome-sections">
+      <h2>Sections</h2>
+      <div class="section-grid">${cards}</div>
+    </div>
+  `;
+}
+
+function openFirstFileIn(sectionId) {
+  const section = SITE_CONTENT.tree.find(n => n.id === sectionId);
+  if (!section || !section.children) return;
+  // Find first file (non-folder) in this section
+  function findFirst(nodes) {
+    for (const n of nodes) {
+      if (n.type !== 'folder') return n;
+      const f = findFirst(n.children);
+      if (f) return f;
+    }
+    return null;
+  }
+  const first = findFirst(section.children);
+  if (first) openFile(first.id);
+}
+
+// ─── KEYBOARD SHORTCUTS ─────────────────────────────────
+document.addEventListener('keydown', e => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+    e.preventDefault();
+    document.getElementById('search').focus();
+  }
+  if (e.key === 'Escape') {
+    document.getElementById('search').blur();
+  }
+});
+
+// ─── INIT ────────────────────────────────────────────────
+renderSidebar();
+renderWelcome();
+
+// Open README by default
+const readme = allFiles.find(f => f.name === 'README.md');
+if (readme) {
+  // Small delay so sidebar renders first
+  setTimeout(() => openFile(readme.id), 100);
+}
+</script>
+</body>
+</html>
